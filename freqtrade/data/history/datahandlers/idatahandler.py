@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 
 
 class IDataHandler(ABC):
-    _OHLCV_REGEX = r"^([a-zA-Z_\d-]+)\-(\d+[a-zA-Z]{1,2})\-?([a-zA-Z_]*)?(?=\.)"
-    _TRADES_REGEX = r"^([a-zA-Z_\d-]+)\-(trades)?(?=\.)"
+    _OHLCV_REGEX = r"^([\w-]+)\-(\d+[a-zA-Z]{1,2})\-?([a-zA-Z_]*)?(?=\.)"
+    _TRADES_REGEX = r"^([\w-]+)\-(trades)?(?=\.)"
 
     def __init__(self, datadir: Path) -> None:
         self._datadir = datadir
@@ -69,28 +69,6 @@ class IDataHandler(ABC):
             for match in _tmp
             if match and len(match.groups()) > 1
         ]
-
-    @classmethod
-    def ohlcv_get_pairs(cls, datadir: Path, timeframe: str, candle_type: CandleType) -> list[str]:
-        """
-        Returns a list of all pairs with ohlcv data available in this datadir
-        for the specified timeframe
-        :param datadir: Directory to search for ohlcv files
-        :param timeframe: Timeframe to search pairs for
-        :param candle_type: Any of the enum CandleType (must match trading mode!)
-        :return: List of Pairs
-        """
-        candle = ""
-        if candle_type != CandleType.SPOT:
-            datadir = datadir.joinpath("futures")
-            candle = f"-{candle_type}"
-        ext = cls._get_file_extension()
-        _tmp = [
-            re.search(r"^(\S+)(?=\-" + timeframe + candle + f".{ext})", p.name)
-            for p in datadir.glob(f"*{timeframe}{candle}.{ext}")
-        ]
-        # Check if regex found something and only return these results
-        return [cls.rebuild_pair_from_filename(match[0]) for match in _tmp if match]
 
     @abstractmethod
     def ohlcv_store(
@@ -358,11 +336,10 @@ class IDataHandler(ABC):
     def rebuild_pair_from_filename(pair: str) -> str:
         """
         Rebuild pair name from filename
-        Assumes a asset name of max. 7 length to also support BTC-PERP and BTC-PERP:USD names.
+        Replaces the first '_' with '/' and the second '_' (if present) with ':'.
+        e.g. BTC_USDT -> BTC/USDT, BTC_USDT_USDT -> BTC/USDT:USDT
         """
-        res = re.sub(r"^(([A-Za-z\d]{1,10})|^([A-Za-z\-]{1,6}))(_)", r"\g<1>/", pair, count=1)
-        res = re.sub("_", ":", res, count=1)
-        return res
+        return pair.replace("_", "/", 1).replace("_", ":", 1)
 
     def ohlcv_load(
         self,

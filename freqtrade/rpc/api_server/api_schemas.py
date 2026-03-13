@@ -1,7 +1,7 @@
 from datetime import date, datetime
-from typing import Any
+from typing import Annotated, Any, Literal
 
-from pydantic import AwareDatetime, BaseModel, RootModel, SerializeAsAny, model_validator
+from pydantic import AwareDatetime, BaseModel, Field, RootModel, SerializeAsAny, model_validator
 
 from freqtrade.constants import DL_DATA_TIMEFRAMES, IntOrInf
 from freqtrade.enums import MarginMode, OrderTypeValues, SignalDirection, TradingMode
@@ -527,10 +527,59 @@ class FreqAIModelListResponse(BaseModel):
     freqaimodels: list[str]
 
 
+class __StrategyParameter(BaseModel):
+    param_type: str
+    name: str
+    space: str
+    load: bool
+    optimize: bool
+
+
+class IntParameter(__StrategyParameter):
+    param_type: Literal["IntParameter"]
+    value: int
+    low: int
+    high: int
+
+
+class RealParameter(__StrategyParameter):
+    param_type: Literal["RealParameter"]
+    value: float
+    low: float
+    high: float
+
+
+class DecimalParameter(__StrategyParameter):
+    param_type: Literal["DecimalParameter"]
+    value: float
+    low: float
+    high: float
+    decimals: int
+
+
+class BooleanParameter(__StrategyParameter):
+    param_type: Literal["BooleanParameter"]
+    value: bool | None
+    opt_range: list[bool]
+
+
+class CategoricalParameter(__StrategyParameter):
+    param_type: Literal["CategoricalParameter"]
+    value: Any
+    opt_range: list[Any]
+
+
+AllParameters = Annotated[
+    BooleanParameter | CategoricalParameter | DecimalParameter | IntParameter | RealParameter,
+    Field(discriminator="param_type"),
+]
+
+
 class StrategyResponse(BaseModel):
     strategy: str
-    code: str
     timeframe: str | None
+    params: list[AllParameters] = Field(default_factory=list)
+    code: str
 
 
 class AvailablePairs(BaseModel):
@@ -648,9 +697,25 @@ class MarketResponse(BaseModel):
     exchange_id: str
 
 
+class CpuInfo(BaseModel):
+    cpu: int
+    pct: float
+
+
 class SysInfo(BaseModel):
-    cpu_pct: list[float]
-    ram_pct: float
+    """Information about the system running the bot based on psutil output/measurements
+
+    Note: cpu_pct is deprecated and may be removed in a future release. Use cpu_load instead.
+    """
+
+    cpu_pct: list[float] = Field(
+        default=[], deprecated=True, description="Use cpu_load object instead"
+    )
+    cpu_load: list[CpuInfo]
+    cpu_load_avg: dict[str, float]
+    cpu_count: int = Field(description="Number of logical CPUs as provided by psutil")
+    cpu_avg: float = Field(description="Average CPU load across all cores as provided by psutil")
+    ram_pct: float = Field(description="RAM usage percentage as provided by psutil")
 
 
 class Health(BaseModel):
