@@ -212,6 +212,13 @@ ARGS_PORTFOLIO = [
 
 ARGS_GENERATE_DATA: list[str] = []
 
+ARGS_WORKFLOW = [
+    "workflow_file",
+    "output_json",
+    "flowmesh_url",
+    "flowmesh_key",
+]
+
 ARGS_PLOT_DATAFRAME = [
     "pairs",
     "indicators1",
@@ -325,6 +332,7 @@ NO_CONF_REQURIED = [
     "plot-profit",
     "portfolio",
     "show-trades",
+    "workflow",
     "install-ui",
     "strategy-updater",
     "trades-to-ohlcv",
@@ -420,6 +428,7 @@ class Arguments:
             start_benchmark_all,
             start_generate_data,
             start_portfolio,
+            start_workflow,
             start_convert_data,
             start_convert_db,
             start_convert_trades,
@@ -786,3 +795,12 @@ class Arguments:
         )
         generate_data_cmd.set_defaults(func=start_generate_data)
         self._build_args(optionlist=ARGS_GENERATE_DATA, parser=generate_data_cmd)
+
+        # Add workflow subcommand (PortfolioBench — LumidOS workflow execution)
+        workflow_cmd = subparsers.add_parser(
+            "workflow",
+            help="Run a lumid/v1 workflow with optional FlowMesh GPU backend via LumidOS.",
+            parents=[_common_parser],
+        )
+        workflow_cmd.set_defaults(func=start_workflow)
+        self._build_args(optionlist=ARGS_WORKFLOW, parser=workflow_cmd)
