@@ -902,4 +902,25 @@ AVAILABLE_CLI_OPTIONS = {
         type=float,
         default=10_000.0,
     ),
+    # ── PortfolioBench workflow options ───────────────────────────────
+    "workflow_file": Arg(
+        "workflow_file",
+        help="Path to a lumid/v1 workflow JSON file.",
+        metavar="WORKFLOW_FILE",
+    ),
+    "output_json": Arg(
+        "--output-json",
+        help="Write backtest metrics and AI results to a JSON file.",
+        metavar="PATH",
+    ),
+    "flowmesh_url": Arg(
+        "--flowmesh-url",
+        help="FlowMesh host URL for GPU-accelerated stages (e.g. http://localhost:8000).",
+        metavar="URL",
+    ),
+    "flowmesh_key": Arg(
+        "--flowmesh-key",
+        help="FlowMesh API key (Bearer token).",
+        metavar="KEY",
+    ),
 }
