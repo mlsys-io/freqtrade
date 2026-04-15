@@ -397,7 +397,11 @@ class Arguments:
             help_text = options.pop("help", None)
             if opt.fthelp and isinstance(opt.fthelp, dict) and hasattr(parser, "prog"):
                 help_text = opt.fthelp.get(parser.prog, help_text)
-            parser.add_argument(*opt.cli, dest=val, help=help_text, **options)
+            is_positional = not opt.cli[0].startswith("-")
+            if is_positional:
+                parser.add_argument(*opt.cli, help=help_text, **options)
+            else:
+                parser.add_argument(*opt.cli, dest=val, help=help_text, **options)
 
     def _build_subcommands(self) -> None:
         """
