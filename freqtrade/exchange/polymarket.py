@@ -81,7 +81,7 @@ def _polymarket_synthetic_market(pair: str) -> dict:
         "type": "spot",
         "contract": False,
         "active": True,
-        "precision": {"amount": 0, "price": 4},  # whole shares, 4-decimal prices
+        "precision": {"amount": 1, "price": 4},  # whole shares (min step=1), 4-decimal prices
         "limits": {
             "amount": {"min": 1, "max": 1e8},
             "price": {"min": PRICE_FLOOR, "max": PRICE_CEIL},
