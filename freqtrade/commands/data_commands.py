@@ -38,6 +38,10 @@ def _download_gdrive_data(exchange_name: str, datadir: str) -> None:
             "1x5jQ_8tkQhJuinhLKIctqa7aZ8D1uUHf",
             "polymarket prediction-market contracts",
         ),
+        "kalshi": (
+            "1DDo6uumqlsHeO4Ikvbo8LleEvWrXBKnP",
+            "kalshi prediction-market contracts",
+        )
     }
 
     folder_id, description = GDRIVE_FOLDERS[exchange_name]
@@ -73,7 +77,7 @@ def start_download_data(args: dict[str, Any]) -> None:
     config = setup_utils_configuration(args, RunMode.UTIL_EXCHANGE)
 
     exchange_name = config.get("exchange", {}).get("name", "").lower()
-    if exchange_name in ("portfoliobench", "polymarket"):
+    if exchange_name in ("portfoliobench", "polymarket", "kalshi"):
         try:
             _download_gdrive_data(exchange_name, str(config["datadir"]))
         except KeyboardInterrupt:

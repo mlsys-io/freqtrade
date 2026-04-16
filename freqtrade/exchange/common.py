@@ -67,6 +67,7 @@ SUPPORTED_EXCHANGES = [
     "myokx",
     "polymarket",
     "portfoliobench",
+    "kalshi",
 ]
 
 # either the main, or replacement methods (array) is required
