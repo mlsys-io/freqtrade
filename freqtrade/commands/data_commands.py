@@ -40,6 +40,14 @@ def _download_gdrive_data(exchange_name: str, datadir: str) -> None:
         ),
     }
 
+    # Single files to download in addition to (or instead of) folders.
+    GDRIVE_FILES: dict[str, list[tuple[str, str]]] = {
+        "polymarket": [
+            ("1ShpDtjA3NPxxts-m2tKhPDOqu7BhziO0", "polymarket_markets_1y.jsonl"),
+            ("1iHNgbhJQpLxAgVCSvtcQ2IprsMvfejC8", "raw_orderbook.zip")
+        ],
+    }
+
     folder_id, description = GDRIVE_FOLDERS[exchange_name]
     dest = Path(datadir)
     dest.mkdir(parents=True, exist_ok=True)
@@ -58,6 +66,20 @@ def _download_gdrive_data(exchange_name: str, datadir: str) -> None:
 
     n_files = len(list(dest.glob("*.feather")))
     logger.info("Done — %d feather files in %s", n_files, dest)
+
+    for file_id, filename in GDRIVE_FILES.get(exchange_name, []):
+        out_path = dest / filename
+        file_url = f"https://drive.google.com/uc?id={file_id}"
+        logger.info("Downloading %s into %s ...", filename, dest)
+        gdown.download(file_url, output=str(out_path), quiet=False)
+        logger.info("Done — saved %s", out_path)
+        if out_path.suffix == ".zip":
+            import zipfile
+            logger.info("Extracting %s into %s ...", filename, dest)
+            with zipfile.ZipFile(out_path, "r") as zf:
+                zf.extractall(dest)
+            out_path.unlink()
+            logger.info("Extracted and removed %s", filename)
 
 
 def start_download_data(args: dict[str, Any]) -> None:
